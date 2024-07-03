@@ -11,7 +11,7 @@ app = FastAPI(
 )
 scheduler = AsyncIOScheduler(timezone=timezone('Europe/Moscow'))
 
-scheduler.add_job(update_levels, CronTrigger(hour=0, minute=35))
+scheduler.add_job(update_levels, CronTrigger(hour=12, minute=18))
 
 @app.on_event("startup")
 async def startup_event():

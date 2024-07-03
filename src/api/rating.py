@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Header
-from loguru import logger
+from http import HTTPStatus
 
-from src.auth.utils import decode_base64
+from fastapi import APIRouter, Header, HTTPException
+from loguru import logger
+from starlette.responses import JSONResponse
+
 from src.repositories.rating import RatingRepository
 from src.repositories.users import UserRepository
+from src.services.Changer import RatingChanger, UserChanger
+from src.services.encryption import Encrypt
 
 router = APIRouter(
     prefix="/api/rating",
@@ -11,12 +15,18 @@ router = APIRouter(
 )
 
 
-@router.post('/game')
+@router.post('/add_game')
 async def add_game(token: str | None = Header(default=None), reputation_game: int = 0):
-    encoded_phone = token.split("||")[0]
-    phone = decode_base64(encoded_phone)
-    user_db = await UserRepository().get_user(phone)
-    old_user_reputation = await RatingRepository().get_reputation_user(user_db.id)
-    new_reputation = old_user_reputation + reputation_game
-    await RatingRepository().add_game(user_db.id, new_reputation)
+    try:
+        phone = Encrypt.get_phone_by_token(token)
+        logger.info(f'phone = {phone}')
+        if phone is None:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="невалидный токен")
+        else:
+            await RatingChanger.update_reputation(phone, reputation_game)
+            await UserChanger.update_current_level(phone)
+            return JSONResponse(status_code=HTTPStatus.OK, content={"detail": "репутация обновлена"})
+    except Exception as e:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка авторизации пользователя {e}")
+
 

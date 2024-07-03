@@ -6,7 +6,7 @@ from src.database.connection import get_async_session
 from src.database.models import Level
 from src.repositories.levels import LevelsRepository
 
-#
+
 def generate_new_levels():
     NUMBER_LEVELS = 200
     new_levels = []

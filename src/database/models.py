@@ -12,7 +12,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    phone: Mapped[str] = mapped_column()
+    phone: Mapped[str] = mapped_column(unique=True)
     subscription_status: Mapped[bool] = mapped_column(default=False)
     hearts: Mapped[int] = mapped_column(default=0)
     clue: Mapped[int] = mapped_column(default=0)
