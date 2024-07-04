@@ -13,10 +13,6 @@ class AbstractRepository(ABC):
     async def add_one(self):
         raise NotImplementedError
 
-    @abstractmethod
-    async def find_all(self):
-        raise NotImplementedError
-
 
 class SQLAlchemyRepository(AbstractRepository):
     model = None
@@ -90,10 +86,9 @@ class SQLAlchemyRepository(AbstractRepository):
                 logger.error(f"Error performing left join: {e}")
                 return None
 
-
-    async def find_all(self):
+    async def find_all(self, order_params):
         async with get_async_session() as session:
-            stmt = select(self.model)
+            stmt = select(self.model).order_by(order_params.desc())
             res = await session.execute(stmt)
             res = [row[0].to_read_model() for row in res.all()]
             return res

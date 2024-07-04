@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Header
 from loguru import logger
+from starlette.responses import JSONResponse
 
 from src.auth.utils import Auth
 from src.repositories.rating import RatingRepository
@@ -21,7 +22,7 @@ async def signup(user: UserSignUp):
     try:
         await User.add_user(user)
         token = Auth.create_token(user.phone)
-        raise HTTPException(status_code=HTTPStatus.OK, detail=f"{token}")
+        return JSONResponse(status_code=HTTPStatus.OK, content=token)
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка регистрации пользователя {e}")
 

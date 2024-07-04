@@ -20,12 +20,14 @@ class RatingRepository(SQLAlchemyRepository):
     @staticmethod
     async def update_current_level(user_id, new_current_level):
         rating = RatingRepository()
-        logger.info(f'update_current_level')
-        logger.info(f'Rating.user_id = {Rating.user_id}')
-        logger.info(f'user_id = {user_id}')
-        logger.info(f'Rating.current_level = {Rating.current_level}')
-        logger.info(f'new_current_level = {new_current_level}')
         await rating.update_values(Rating.user_id, user_id, Rating.current_level, new_current_level)
+
+    @staticmethod
+    async def find_all_rating_desc():
+        rating = RatingRepository()
+        await rating.find_all(Rating.reputation)
+
+
 
     async def get_user_from_rating(self, user_id: int) -> RatingSchema:
         async with get_async_session() as session:
@@ -36,7 +38,7 @@ class RatingRepository(SQLAlchemyRepository):
                 res = res.scalar_one().to_read_model()
             except Exception as e:
                 logger.error(f"Error retrieving user reputation: {e}")
-                return ()  # Вернуть значение по умолчанию или обработать ошибку
+                return (e)
             return res
 
     async def get_reputation_user(self, user_id: int) -> int:

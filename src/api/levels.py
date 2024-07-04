@@ -29,5 +29,5 @@ async def get_level(token: str | None = Header(default=None)):
             user_from_rating = await RatingRepository().get_user_from_rating(user.id)
             level = await LevelsRepository().get_level(user_from_rating.current_level)
             await UserChanger().subtract_hearts(phone)
-            level_json = level.dict()
-    return JSONResponse(status_code=HTTPStatus.OK, content=level_json)
+            level_dict = level.dict()
+    return JSONResponse(status_code=HTTPStatus.OK, content=level_dict)
