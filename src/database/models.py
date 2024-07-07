@@ -1,23 +1,22 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from src.database.connection import Base
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean
-
+from sqlalchemy import ForeignKey
+from src.schemas.settings import GlobalSettingsSchema
 from src.schemas.levels import LevelSchema
 from src.schemas.rating import RatingSchema
 from src.schemas.users import UserSchema
 
 
-class User(Base):
+class ModelUser(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     phone: Mapped[str] = mapped_column(unique=True)
     subscription_status: Mapped[bool] = mapped_column(default=False)
-    hearts: Mapped[int] = mapped_column(default=0)
-    clue: Mapped[int] = mapped_column(default=0)
+    hearts: Mapped[int] = mapped_column(default=5)
+    clue: Mapped[int] = mapped_column(default=5)
 
-    rating: Mapped["Rating"] = relationship("Rating", uselist=False, back_populates="user")
+    rating = relationship("ModelRating", uselist=False, back_populates="user")
 
     def to_read_model(self) -> UserSchema:
         return UserSchema(
@@ -29,7 +28,7 @@ class User(Base):
         )
 
 
-class Rating(Base):
+class ModelRating(Base):
     __tablename__ = 'rating'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -37,7 +36,7 @@ class Rating(Base):
     reputation: Mapped[int] = mapped_column()
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped["User"] = relationship("User", back_populates="rating")
+    user = relationship("ModelUser", back_populates="rating")
 
     def to_read_model(self) -> RatingSchema:
         return RatingSchema(
@@ -48,13 +47,26 @@ class Rating(Base):
         )
 
 
-class Level(Base):
+class GlobalSettings(Base):
+    __tablename__ = 'settings'
+
+    key: Mapped[str] = mapped_column(primary_key=True)
+    value: Mapped[int] = mapped_column()
+
+    def to_read_model(self) -> GlobalSettingsSchema:
+        return GlobalSettingsSchema(
+            key=self.key,
+            value=self.value,
+        )
+
+
+class ModelLevel(Base):
     __tablename__ = 'levels'
 
-    id = Column(Integer, primary_key=True)
-    code_length = Column(Integer)
-    hint = Column(Integer)
-    degree_hint = Column(Integer)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code_length: Mapped[int] = mapped_column()
+    hint: Mapped[int] = mapped_column()
+    degree_hint: Mapped[int] = mapped_column()
 
     def to_read_model(self) -> LevelSchema:
         return LevelSchema(

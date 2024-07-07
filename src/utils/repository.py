@@ -63,29 +63,6 @@ class SQLAlchemyRepository(AbstractRepository):
                 logger.error(f"Error adding game: {e}")
                 return ()
 
-    @staticmethod
-    async def left_join(self, join_model, join_criterion, select_columns, where_criterion=None,
-                        where_search_param=None):
-        async with get_async_session() as session:
-            try:
-                aliased_join_model = aliased(join_model)
-                stmt = (
-                    select(select_columns)
-                    .select_from(self.model)
-                    .join(aliased_join_model, join_criterion, isouter=True)
-                )
-
-                if where_criterion and where_search_param:
-                    stmt = stmt.where(where_criterion == where_search_param)
-
-                res = await session.execute(stmt)
-                results = res.fetchall()
-                logger.info(f'results = {results}')
-                return results
-            except Exception as e:
-                logger.error(f"Error performing left join: {e}")
-                return None
-
     async def find_all(self, order_params):
         async with get_async_session() as session:
             stmt = select(self.model).order_by(order_params.desc())

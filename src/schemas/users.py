@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class UserSchema(BaseModel):
     id: int
     phone: str
@@ -15,5 +16,5 @@ class UserSignUp(BaseModel):
     phone: str
 
 
-class UserSignIn(BaseModel):
-    phone: str
+class UserSchemaDTO(UserSchema):
+    rating: "RatingSchema"

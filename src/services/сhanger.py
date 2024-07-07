@@ -24,6 +24,12 @@ class UserChanger:
         await UserRepository.update_heart_user(user.id, new_user_hersts)
 
     @staticmethod
+    async def plus_hearts(phone):
+        user = await UserRepository().get_user(phone)
+        new_user_hearts = user.hearts + 5
+        await UserRepository.update_heart_user(user.id, new_user_hearts)
+
+    @staticmethod
     async def update_current_level(phone):
         user = await UserRepository().get_user(phone)
         user_from_rating = await RatingRepository().get_user_from_rating(user.id)

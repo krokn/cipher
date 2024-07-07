@@ -3,7 +3,6 @@ import random
 from sqlalchemy import text
 
 from src.database.connection import get_async_session
-from src.database.models import Level
 from src.repositories.levels import LevelsRepository
 
 
