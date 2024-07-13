@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database.connection import Base
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum
 from src.schemas.settings import GlobalSettingsSchema
 from src.schemas.levels import LevelSchema
 from src.schemas.rating import RatingSchema
@@ -14,7 +14,7 @@ class ModelUser(Base):
     phone: Mapped[str] = mapped_column(unique=True)
     subscription_status: Mapped[bool] = mapped_column(default=False)
     hearts: Mapped[int] = mapped_column(default=5)
-    clue: Mapped[int] = mapped_column(default=5)
+    clue: Mapped[int] = mapped_column(default=1)
 
     rating = relationship("ModelRating", uselist=False, back_populates="user")
 
@@ -75,3 +75,11 @@ class ModelLevel(Base):
             hint=self.hint,
             degree_hint=self.degree_hint,
         )
+
+
+# class ModelPlatform(Base):
+#     __tablename__ = 'platform'
+#
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     name: Mapped[str] = mapped_column(Enum("RuStore", "Билайн", "Tele2", name="platform_name"), unique=True)
+

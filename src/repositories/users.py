@@ -17,7 +17,13 @@ class UserRepository(SQLAlchemyRepository):
         return res
 
     @staticmethod
-    async def update_heart_user(user_id, new_current_level):
+    async def update_heart_user(user_id: int, new_user_hearts):
         user = UserRepository()
-        res = await user.update_values(ModelUser.id, user_id, ModelUser.hearts, new_current_level)
+        res = await user.update_values(ModelUser.id, user_id, ModelUser.hearts, new_user_hearts)
+        return res
+
+    @staticmethod
+    async def update_clue_user(user_id: int, new_user_clue):
+        user = UserRepository()
+        res = await user.update_values(ModelUser.id, user_id, ModelUser.clue, new_user_clue)
         return res

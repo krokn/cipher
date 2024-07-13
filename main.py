@@ -14,9 +14,13 @@ scheduler = AsyncIOScheduler(timezone=timezone('Europe/Moscow'))
 scheduler.add_job(update_levels, CronTrigger(hour=12, minute=18))
 
 
-@app.on_event("startup")
-async def startup_event():
-    await AdminPanel().get_settings()
+# @app.on_event("startup")
+# async def startup_event():
+#     await AdminPanel().get_settings()
+
+# @app.on_event("startup")
+# async def startup_event():
+#     await check_postgres_connection()
 
 
 @app.on_event("startup")

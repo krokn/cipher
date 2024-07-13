@@ -29,17 +29,17 @@ class Encrypt:
         return hashed_str
 
     @staticmethod
-    def get_phone_by_token(token: str):
+    def get_user_by_token(token: str):
         try:
-            encoded_phone = token.split("||")[0]
+            encoded_identification_string = token.split("||")[0]
             user_signatura = token.split("||")[1]
-            phone = Encrypt.decoded(encoded_phone)
-            token_server = Encrypt.create_token(phone)
+            decoded_identification_string = Encrypt.decoded(encoded_identification_string)
+            token_server = Encrypt.create_token(decoded_identification_string)
             server_signatura = token_server.split("||")[1]
             logger.info(f'server_signatura = {server_signatura}')
             logger.info(f'user_signatura = {user_signatura}')
             if user_signatura == server_signatura:
-                return phone
+                return decoded_identification_string
         except:
             return None
 

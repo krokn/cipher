@@ -12,8 +12,16 @@ class UserSchema(BaseModel):
         from_attributes = True
 
 
-class UserSignUp(BaseModel):
+class UserByPhone(BaseModel):
     phone: str
+
+
+class AuthEmail(BaseModel):
+    email: str
+
+
+class AuthEmailWithCode(AuthEmail):
+    code: str
 
 
 class UserSchemaDTO(UserSchema):

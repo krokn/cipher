@@ -4,7 +4,7 @@ def response_raiting(rating_orm):
         {
             'current_level': rating.current_level,
             'reputation': rating.reputation,
-            'phone': rating.user.phone
+            'phone': rating.user
         }
         for rating in rating_orm
     ]

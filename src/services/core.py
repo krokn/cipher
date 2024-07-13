@@ -6,14 +6,15 @@ from src.repositories.levels import LevelsRepository
 from src.repositories.rating import RatingRepository
 from src.repositories.users import UserRepository
 from src.schemas.rating import RatingSchemaForAddUser
-from src.schemas.users import UserSignUp
+from src.schemas.users import UserByPhone
+from src.services.encryption import Encrypt
 from src.services.сhanger import UserChanger, RatingChanger
 
 
 class User:
 
     @staticmethod
-    async def add_user(user: UserSignUp):
+    async def add_user(user: UserByPhone):
         user_dict = user.model_dump()
         user_id = await UserRepository().add_one(user_dict)
         rating = RatingSchemaForAddUser()
@@ -22,8 +23,26 @@ class User:
         await RatingRepository().add_one(rating_dict)
 
     @staticmethod
-    async def get_user(phone: str):
+    async def get_user(token: str):
+        phone = Encrypt.get_user_by_token(token)
         return await UserRepository().get_user(phone)
+
+    @staticmethod
+    async def add_subscribe(phone: str, number_of_clue_to_add, number_of_hearts_to_add):
+        await UserChanger().plus_hearts(phone, number_of_hearts_to_add)
+        await UserChanger().plus_clue(phone, number_of_clue_to_add)
+
+    @staticmethod
+    async def add_hearts(phone: str, number_of_hearts_to_add):
+        await UserChanger().plus_hearts(phone, number_of_hearts_to_add)
+
+    @staticmethod
+    async def add_clue(phone: str, number_of_clue_to_add):
+        await UserChanger().plus_clue(phone, number_of_clue_to_add)
+
+    @staticmethod
+    async def subtract_clue(phone: str, number_of_clue_to_subtract):
+        await UserChanger().subtract_clue(phone, number_of_clue_to_subtract)
 
 
 class Level:

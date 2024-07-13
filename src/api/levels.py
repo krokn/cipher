@@ -13,7 +13,7 @@ router = APIRouter(
 
 @router.get('')
 async def get_level(token: str | None = Header(default=None)):
-    phone = Encrypt.get_phone_by_token(token)
+    phone = Encrypt.get_user_by_token(token)
     if phone is None:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="невалидный токен")
     else:

@@ -20,14 +20,26 @@ class UserChanger:
     @staticmethod
     async def subtract_hearts(phone):
         user = await UserRepository().get_user(phone)
-        new_user_hersts = user.hearts - 1
-        await UserRepository.update_heart_user(user.id, new_user_hersts)
+        new_user_hearts = user.hearts - 1
+        await UserRepository.update_heart_user(user.id, new_user_hearts)
 
     @staticmethod
-    async def plus_hearts(phone):
+    async def plus_hearts(phone, number_of_hearts_to_add):
         user = await UserRepository().get_user(phone)
-        new_user_hearts = user.hearts + 5
+        new_user_hearts = user.hearts + number_of_hearts_to_add
         await UserRepository.update_heart_user(user.id, new_user_hearts)
+
+    @staticmethod
+    async def plus_clue(phone, number_of_clue_to_add):
+        user = await UserRepository().get_user(phone)
+        new_user_clue = user.clue + number_of_clue_to_add
+        await UserRepository.update_clue_user(user.id, new_user_clue)
+
+    @staticmethod
+    async def subtract_clue(phone, number_of_clue_to_subtract):
+        user = await UserRepository().get_user(phone)
+        new_user_clue = user.clue - number_of_clue_to_subtract
+        await UserRepository.update_clue_user(user.id, new_user_clue)
 
     @staticmethod
     async def update_current_level(phone):
