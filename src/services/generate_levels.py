@@ -13,7 +13,7 @@ def generate_new_levels():
         new_levels.append({
             "code_length": random.randint(3, 7),
             "hint": random.randint(1, 5),
-            "degree_hint": random.randint(1, 3)
+            "degree_hint": random.randint(1, 2)
         })
     return new_levels
 

@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
+from src.schemas.subscription import SubscriptionSchema
+
 
 class UserSchema(BaseModel):
     id: int
-    phone: str
-    subscription_status: bool
+    id_platform: int
+    identifier: str
     hearts: int
     clue: int
 
@@ -24,5 +26,7 @@ class AuthEmailWithCode(AuthEmail):
     code: str
 
 
-class UserSchemaDTO(UserSchema):
+class UserSchemaDTORating(UserSchema):
     rating: "RatingSchema"
+
+

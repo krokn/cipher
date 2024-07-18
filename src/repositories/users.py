@@ -11,9 +11,9 @@ class UserRepository(SQLAlchemyRepository):
     model = ModelUser
 
     @staticmethod
-    async def get_user(phone: str) -> UserSchema:
+    async def get_user(identifier: str) -> UserSchema:
         user_repository = UserRepository()
-        res = await user_repository.find_by_param(ModelUser.phone, phone)
+        res = await user_repository.find_by_param(ModelUser.identifier, identifier)
         return res
 
     @staticmethod

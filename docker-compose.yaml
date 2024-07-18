@@ -14,43 +14,43 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "3233:5432"
+      - "3234:5432"
     networks:
       - default
 
-  fastapi:
-    container_name: fastapi
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8080:8000"
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - default
-
-  redis:
-    container_name: redis
-    image: redis:latest
-    ports:
-      - "6379:6379"
-    networks:
-      - default
-
-  celery:
-    container_name: celery
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: celery -A src.services.celery worker --loglevel=info
-    depends_on:
-      - redis
-      - postgres
-    networks:
-      - default
-
-volumes:
-  postgres-data:
+#  fastapi:
+#    container_name: fastapi
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    command: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+#    ports:
+#      - "8080:8000"
+#    depends_on:
+#      - postgres
+#      - redis
+#    networks:
+#      - default
+#
+#  redis:
+#    container_name: redis
+#    image: redis:latest
+#    ports:
+#      - "6379:6379"
+#    networks:
+#      - default
+#
+#  celery:
+#    container_name: celery
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    command: celery -A src.services.celery worker --loglevel=info
+#    depends_on:
+#      - redis
+#      - postgres
+#    networks:
+#      - default
+#
+#volumes:
+#  postgres-data:

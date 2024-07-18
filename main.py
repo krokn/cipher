@@ -9,10 +9,8 @@ from src.services.generate_levels import update_levels
 app = FastAPI(
     title="Шифр",
 )
-scheduler = AsyncIOScheduler(timezone=timezone('Europe/Moscow'))
-
-scheduler.add_job(update_levels, CronTrigger(hour=12, minute=18))
-
+scheduler = AsyncIOScheduler()
+scheduler.add_job(update_levels, CronTrigger(hour=7, minute=23, timezone='UTC'))
 
 # @app.on_event("startup")
 # async def startup_event():

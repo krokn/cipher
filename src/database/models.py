@@ -1,9 +1,13 @@
+import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, Enum, String, DateTime, func
 from src.database.connection import Base
-from sqlalchemy import ForeignKey, Enum
+from src.schemas.gift import GiftSchema
+from src.schemas.platform import PlatfromSchema
 from src.schemas.settings import GlobalSettingsSchema
 from src.schemas.levels import LevelSchema
 from src.schemas.rating import RatingSchema
+from src.schemas.subscription import SubscriptionSchema
 from src.schemas.users import UserSchema
 
 
@@ -11,18 +15,19 @@ class ModelUser(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    phone: Mapped[str] = mapped_column(unique=True)
-    subscription_status: Mapped[bool] = mapped_column(default=False)
+    id_platform: Mapped[int] = mapped_column(ForeignKey("platform.id"))
+    identifier: Mapped[str] = mapped_column(unique=True)
     hearts: Mapped[int] = mapped_column(default=5)
     clue: Mapped[int] = mapped_column(default=1)
 
-    rating = relationship("ModelRating", uselist=False, back_populates="user")
+    rating = relationship('ModelRating', back_populates='user')
+    subscriptions = relationship('ModelSubscription', back_populates='user')
 
     def to_read_model(self) -> UserSchema:
         return UserSchema(
             id=self.id,
-            phone=self.phone,
-            subscription_status=self.subscription_status,
+            id_platform=self.id_platform,
+            identifier=self.identifier,
             hearts=self.hearts,
             clue=self.clue,
         )
@@ -44,6 +49,55 @@ class ModelRating(Base):
             current_level=self.current_level,
             reputation=self.reputation,
             user_id=self.user_id,
+        )
+
+
+class ModelPlatform(Base):
+    __tablename__ = 'platform'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+
+    def to_read_model(self) -> PlatfromSchema:
+        return PlatfromSchema(
+            id=self.id,
+            name=self.name
+        )
+
+
+class ModelGift(Base):
+    __tablename__ = 'gifts'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    hearts: Mapped[int] = mapped_column(default=0)
+    clue: Mapped[int] = mapped_column(default=0)
+
+    def to_read_model(self) -> GiftSchema:
+        return GiftSchema(
+            id=self.id,
+            name=self.name,
+            hearts=self.hearts,
+            clue=self.clue,
+        )
+
+
+class ModelSubscription(Base):
+    __tablename__ = 'subscription'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    gift_id: Mapped[int] = mapped_column(ForeignKey("gifts.id"), primary_key=True)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user = relationship('ModelUser', back_populates='subscriptions')
+
+    def to_read_model(self) -> SubscriptionSchema:
+        return SubscriptionSchema(
+            id=self.id,
+            user_id=self.user_id,
+            gift_id=self.gift_id,
+            updated_at=self.updated_at
         )
 
 
@@ -75,11 +129,3 @@ class ModelLevel(Base):
             hint=self.hint,
             degree_hint=self.degree_hint,
         )
-
-
-# class ModelPlatform(Base):
-#     __tablename__ = 'platform'
-#
-#     id: Mapped[int] = mapped_column(primary_key=True)
-#     name: Mapped[str] = mapped_column(Enum("RuStore", "Билайн", "Tele2", name="platform_name"), unique=True)
-

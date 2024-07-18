@@ -1,10 +1,10 @@
 
-def response_raiting(rating_orm):
+def response_rating(rating_orm):
     rating_dict_list = [
         {
             'current_level': rating.current_level,
             'reputation': rating.reputation,
-            'phone': rating.user
+            'identifier': rating.user.identifier
         }
         for rating in rating_orm
     ]

@@ -9,9 +9,7 @@ from src.database.connection import get_async_session
 
 
 class AbstractRepository(ABC):
-    @abstractmethod
-    async def add_one(self):
-        raise NotImplementedError
+  pass
 
 
 class SQLAlchemyRepository(AbstractRepository):

@@ -5,7 +5,7 @@ from sqlalchemy import select, update, desc
 from sqlalchemy.orm import joinedload
 
 from src.database.connection import get_async_session
-from src.database.models import ModelRating
+from src.database.models import ModelRating, ModelUser
 from src.schemas.rating import RatingSchema, RatingSchemaDTO
 from src.schemas.users import UserSchema
 from src.utils.repository import SQLAlchemyRepository
@@ -43,6 +43,19 @@ class RatingRepository(SQLAlchemyRepository):
     async def find_all_rating_desc():
         rating = RatingRepository()
         return await rating.find_all(ModelRating.reputation)
+
+    @staticmethod
+    async def find_rating(id_platform: int) -> List[ModelRating]:
+        async with get_async_session() as session:
+            query = (
+                select(ModelRating)
+                .join(ModelRating.user)  # Ensure the join is correctly made to the user table
+                .options(joinedload(ModelRating.user))
+                .filter(ModelUser.id_platform == id_platform)  # Add the filter for id_platform
+                .order_by(desc(ModelRating.reputation))
+            )
+            res = await session.execute(query)
+            return res.scalars().all()
 
     @staticmethod
     async def find_all_relationship() -> List[ModelRating]:

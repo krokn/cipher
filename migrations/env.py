@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from config import DB_PORT, DB_HOST, DB_NAME, DB_USER, DB_PASS
+from config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
 from src.database.connection import Base
 from src.database.models import ModelUser
 
@@ -29,7 +29,6 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
