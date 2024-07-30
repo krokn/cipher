@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class LevelSchema(BaseModel):
     id: int
     code_length: int
-    hint: int
+    attempts: int
     degree_hint: int
 
     class Config:

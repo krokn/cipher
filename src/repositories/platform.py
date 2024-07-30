@@ -1,13 +1,24 @@
-from src.database.models import ModelPlatform
+from fastapi import HTTPException
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.database.connection import get_async_session
+from src.database.models import PlatformModel, LevelModel
 from src.schemas.platform import PlatfromSchema
 from src.utils.repository import SQLAlchemyRepository
 
 
 class PlatformRepository(SQLAlchemyRepository):
-    model = ModelPlatform
+    model = PlatformModel
 
     @staticmethod
-    async def get_platform(name: str) -> PlatfromSchema:
-        platform_repository = PlatformRepository()
-        res = await platform_repository.find_by_param(ModelPlatform.name, name)
-        return res
+    async def get_platform(platform_name: str):
+        async with get_async_session() as session:
+            result = await session.execute(select(PlatformModel).where(PlatformModel.name == platform_name))
+            platform = result.scalar_one_or_none()
+            if not platform:
+                raise HTTPException(status_code=404, detail="platform not found.")
+            return platform
+
+

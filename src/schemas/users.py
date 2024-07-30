@@ -9,6 +9,7 @@ class UserSchema(BaseModel):
     identifier: str
     hearts: int
     clue: int
+    level_id: int
 
     class Config:
         from_attributes = True

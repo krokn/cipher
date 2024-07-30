@@ -11,5 +11,8 @@ apscheduler==3.10.4
 pytz==2024.1
 loguru==0.7.2
 celery==5.3.4
-redis==3.5.3
+redis~=5.0.7
 gunicorn==22.0.0
+starlette~=0.37.2
+fastapi_profiler
+django-celery-beat

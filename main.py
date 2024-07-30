@@ -1,36 +1,12 @@
 from fastapi import FastAPI
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from pytz import timezone
+from fastapi_profiler import PyInstrumentProfilerMiddleware
 from src.api.routers import all_routers
-from src.services.admin import AdminPanel
-from src.services.generate_levels import update_levels
 
 app = FastAPI(
     title="Шифр",
 )
-scheduler = AsyncIOScheduler()
-scheduler.add_job(update_levels, CronTrigger(hour=7, minute=23, timezone='UTC'))
 
-# @app.on_event("startup")
-# async def startup_event():
-#     await AdminPanel().get_settings()
-
-# @app.on_event("startup")
-# async def startup_event():
-#     await check_postgres_connection()
-
-
-@app.on_event("startup")
-async def startup_event():
-    print("Starting up...")
-    scheduler.start()
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    print("Shutting down...")
-    scheduler.shutdown()
+app.add_middleware(PyInstrumentProfilerMiddleware)
 
 
 for router in all_routers:

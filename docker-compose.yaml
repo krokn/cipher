@@ -7,50 +7,63 @@ services:
   postgres:
     container_name: postgres
     image: postgres:16
-    env_file:
-      - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: db1
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: 1234
     ports:
-      - "3234:5432"
+      - "1002:5432"
+    networks:
+      - default
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  fastapi:
+    container_name: fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+#    command: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    ports:
+      - "8080:8000"
+    depends_on:
+      - postgres
+      - redis
     networks:
       - default
 
-#  fastapi:
-#    container_name: fastapi
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    command: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-#    ports:
-#      - "8080:8000"
-#    depends_on:
-#      - postgres
-#      - redis
-#    networks:
-#      - default
-#
-#  redis:
-#    container_name: redis
-#    image: redis:latest
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - default
-#
-#  celery:
-#    container_name: celery
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    command: celery -A src.services.celery worker --loglevel=info
-#    depends_on:
-#      - redis
-#      - postgres
-#    networks:
-#      - default
-#
-#volumes:
-#  postgres-data:
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - default
+
+  celery:
+    container_name: celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A src.services.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - default
+
+  celery-beat:
+    container_name: celery-beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A src.services.celery beat --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - default
+
+volumes:
+  postgres-data:

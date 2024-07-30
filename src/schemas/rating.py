@@ -7,7 +7,6 @@ from src.schemas.users import UserSchema
 
 class RatingSchema(BaseModel):
     id: Optional[int] = Field(default=None)
-    current_level: int
     reputation: int
     user_id: Optional[int] = Field(default=None)
 

@@ -1,92 +1,75 @@
 from typing import List
 
+from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy import select, update, desc
+from sqlalchemy.ext.asyncio import async_session
 from sqlalchemy.orm import joinedload
 
-from src.database.connection import get_async_session
-from src.database.models import ModelRating, ModelUser
+from src.database.connection import get_async_session, SyncSession
+from src.database.models import RatingModelForever, UserModel, RatingModelWeek, RatingModelMonth
+from src.repositories.levels import LevelsRepository
+from src.repositories.users import UserRepository
 from src.schemas.rating import RatingSchema, RatingSchemaDTO
 from src.schemas.users import UserSchema
 from src.utils.repository import SQLAlchemyRepository
 
 
 class RatingRepository(SQLAlchemyRepository):
-    model = ModelRating
-
-    # @staticmethod
-    # async def select_with_relationship():
-    #     async with get_async_session() as session:
-    #         query = (
-    #             select(Rating)
-    #             .options(joinedload(Rating.user))
-    #         )
-    #         res = await session.execute(query)
-    #         print(res)
-    #         result = res.scalars().first()
-    #         result_dto = RatingSchemaDTO.model_validate(result, from_attributes=True)
-    #         print(result_dto)
-    #         print(result_dto.user.phone)
+    model = RatingModelForever
 
     @staticmethod
-    async def update_reputation(user_id: int, new_reputation: int):
-        rating = RatingRepository()
-        res = await rating.update_values(ModelRating.user_id, user_id, ModelRating.reputation, new_reputation)
-        return res
+    def reset_weekly_reputation():
+        with SyncSession() as session:
+            with session.begin():
+                result = session.execute(select(RatingModelWeek))
+                weekly_ratings = result.scalars().all()
+                for rating in weekly_ratings:
+                    rating.reputation = 0
+                session.commit()
 
     @staticmethod
-    async def update_current_level(user_id, new_current_level):
-        rating = RatingRepository()
-        await rating.update_values(ModelRating.user_id, user_id, ModelRating.current_level, new_current_level)
+    def reset_monthly_reputation():
+        with SyncSession() as session:
+            with session.begin():
+                result = session.execute(select(RatingModelMonth))
+                monthly_ratings = result.scalars().all()
+                for rating in monthly_ratings:
+                    rating.reputation = 0
+                session.commit()
 
     @staticmethod
-    async def find_all_rating_desc():
-        rating = RatingRepository()
-        return await rating.find_all(ModelRating.reputation)
-
-    @staticmethod
-    async def find_rating(id_platform: int) -> List[ModelRating]:
+    async def find_rating(identifier: int, time: str) -> List[RatingModelForever]:
         async with get_async_session() as session:
-            query = (
-                select(ModelRating)
-                .join(ModelRating.user)  # Ensure the join is correctly made to the user table
-                .options(joinedload(ModelRating.user))
-                .filter(ModelUser.id_platform == id_platform)  # Add the filter for id_platform
-                .order_by(desc(ModelRating.reputation))
-            )
-            res = await session.execute(query)
+            user = await session.scalar(select(UserModel).where(UserModel.identifier == identifier))
+            if time == 'week':
+                query = (
+                    select(RatingModelWeek)
+                    .join(RatingModelWeek.user)
+                    .options(joinedload(RatingModelWeek.user))
+                    .filter(UserModel.id_platform == user.id_platform)
+                    .order_by(desc(RatingModelWeek.reputation))
+                )
+                res = await session.execute(query)
+            elif time == 'month':
+                query = (
+                    select(RatingModelMonth)
+                    .join(RatingModelMonth.user)
+                    .options(joinedload(RatingModelMonth.user))
+                    .filter(UserModel.id_platform == user.id_platform)
+                    .order_by(desc(RatingModelMonth.reputation))
+                )
+                res = await session.execute(query)
+                pass
+            else:
+                query = (
+                    select(RatingModelForever)
+                    .join(RatingModelForever.user)
+                    .options(joinedload(RatingModelForever.user))
+                    .filter(UserModel.id_platform == user.id_platform)
+                    .order_by(desc(RatingModelForever.reputation))
+                )
+                res = await session.execute(query)
+                pass
             return res.scalars().all()
 
-    @staticmethod
-    async def find_all_relationship() -> List[ModelRating]:
-        async with get_async_session() as session:
-            query = select(ModelRating).options(joinedload(ModelRating.user)).order_by(desc(ModelRating.reputation))
-            res = await session.execute(query)
-            return res.scalars().all()
-
-    async def get_user_from_rating(self, user_id: int):
-        async with get_async_session() as session:
-            try:
-                stmt = select(self.model).where(self.model.user_id == user_id)
-                res = await session.execute(stmt)
-                logger.info(f'res = {res}')
-                res = res.scalar_one().to_read_model()
-            except Exception as e:
-                logger.error(f"Error retrieving user reputation: {e}")
-                return (e)
-            return res
-
-    async def get_reputation_user(self, user_id: int) -> int:
-        async with get_async_session() as session:
-            try:
-                logger.info(f'user_id = {user_id}')
-                stmt = select(self.model).where(self.model.user_id == user_id)
-                res = await session.execute(stmt)
-                logger.info(f'res = {res}')
-                res = res.scalar_one().to_read_model()
-                user_reputation = res.reputation
-                logger.info(f'user_reputation = {user_reputation}')
-            except Exception as e:
-                logger.error(f"Error retrieving user reputation: {e}")
-                return ()  # Вернуть значение по умолчанию или обработать ошибку
-            return user_reputation

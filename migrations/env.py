@@ -7,7 +7,7 @@ from alembic import context
 
 from config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
 from src.database.connection import Base
-from src.database.models import ModelUser
+from src.database.models import UserModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
