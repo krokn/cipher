@@ -1,11 +1,9 @@
 from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.connection import get_async_session
 from src.database.models import PlatformModel, LevelModel
-from src.schemas.platform import PlatfromSchema
 from src.utils.repository import SQLAlchemyRepository
 
 
@@ -18,7 +16,7 @@ class PlatformRepository(SQLAlchemyRepository):
             result = await session.execute(select(PlatformModel).where(PlatformModel.name == platform_name))
             platform = result.scalar_one_or_none()
             if not platform:
-                raise HTTPException(status_code=404, detail="platform not found.")
+                raise HTTPException(status_code=404, detail="platform not found")
             return platform
 
 

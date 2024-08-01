@@ -21,13 +21,13 @@ router = APIRouter(
 async def add_game(token: str | None = Header(default=None), reputation_game: int = 0, used_clue: int = 0):
     try:
         identifier = Encrypt.get_user_by_token(token)
-        if identifier is None:
-            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="невалидный токен")
-        else:
-            await Rating().add_game(identifier, reputation_game, used_clue)
-            return JSONResponse(status_code=HTTPStatus.OK, content="репутация обновлена")
+        await Rating().add_game(identifier, reputation_game, used_clue)
+        return JSONResponse(status_code=HTTPStatus.OK, content="add reputation_game")
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка авторизации пользователя {e}")
+        logger.error(f'error add game = {e}, identifier = {identifier}')
+        raise HTTPException(status_code=500, detail=f"error add game {e}, identifier = {identifier}")
 
 
 @router.get('')
@@ -36,11 +36,13 @@ async def get_rating(token: str | None = Header(default=None), time: str = 'fore
         identifier = Encrypt.get_user_by_token(token)
         rating_orm = await RatingRepository().find_rating(identifier, time)
         if not rating_orm:
-            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={"Рейтинг не найден"})
+            return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content='rating not found')
         rating = response_rating(rating_orm, identifier)
         return JSONResponse(status_code=HTTPStatus.OK, content=rating)
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка получения рейтинга {e}")
+        raise HTTPException(status_code=500, detail=f"error get rating = {e}, identifier = {identifier}")
 
 
 

@@ -1,20 +1,13 @@
-from http import HTTPStatus
 from datetime import timedelta, datetime as time
-
+import time as Time
 from fastapi import HTTPException
 from loguru import logger
-from sqlalchemy import select
-from sqlalchemy.exc import ArgumentError, NoResultFound, SQLAlchemyError
-from sqlalchemy.orm import joinedload
-
-from src.database.connection import get_async_session
-from src.database.models import UserModel, LevelModel, PlatformModel, GiftModel, SubscriptionModel, RatingModelWeek, \
+from src.database.models import UserModel, PlatformModel, GiftModel, SubscriptionModel, RatingModelWeek, \
     RatingModelMonth, RatingModelForever
 from src.repositories.gifts import GiftRepository
 
 from src.repositories.levels import LevelsRepository
 from src.repositories.platform import PlatformRepository
-from src.repositories.rating import RatingRepository
 from src.repositories.subscription import SubscriptionRepository
 
 from src.repositories.users import UserRepository
@@ -24,38 +17,39 @@ class User:
 
     @staticmethod
     async def add_user(identifier: str, platform: str):
+        if await UserRepository().get_user_by_identifier(identifier) is not None:
+            raise HTTPException(status_code=403, detail=f"user register, can login")
         gift = await GiftRepository().get_gift_by_name('обычная-подписка')
         platform = await PlatformRepository().get_platform(platform)
         user = User().create_user(identifier, platform, gift)
-        await UserRepository().save_user(user)
+        await UserRepository().save_user(user, include=['rating_forever', 'rating_week', 'rating_month', 'subscriptions', 'gifts', 'level'])
 
     @staticmethod
     async def add_gift_user(identifier: str, name_gift: str):
         gift = await GiftRepository().get_gift_by_name(name_gift)
-        user = await UserRepository().get_user_by_identifier(identifier)
+        user = await UserRepository().get_user_by_identifier(identifier, include=['subscriptions', 'gift'])
         await UserRepository().add_gift(user, gift)
 
     @staticmethod
     async def change_subscribe_user(identifier: str, name_gift: str):
         gift = await GiftRepository().get_gift_by_name(name_gift)
-        user = await UserRepository().get_user_by_identifier(identifier)
+        user = await UserRepository().get_user_by_identifier(identifier, include=['subscriptions', 'gift'])
         user = User().update_subscription(user)
         await SubscriptionRepository().change_user_subscription(user, gift)
-        await UserRepository().save_user(user)
+        await UserRepository().save_user(user, include=['subscriptions', 'gifts'])
 
     @staticmethod
     async def refresh_subscription_user(identifier: str):
-        user_from_db = await UserRepository().get_user_by_identifier(identifier)
+        user_from_db = await UserRepository().get_user_by_identifier(identifier, include=['subscriptions', 'gift'])
         days = 1
         if user_from_db.subscriptions.gift.name == 'премиум-подписка':
             days = User().check_subscription_update_time_for_prime_user(user_from_db)
             if days is None:
                 return
-            user = User().update_subscription(user_from_db, days)
         elif user_from_db.subscriptions.gift.name == 'обычная-подписка':
             User().check_subscription_update_time(user_from_db)
-            user = User().update_subscription(user_from_db, days)
-        await UserRepository().save_user(user)
+        user = User().update_subscription(user_from_db, days)
+        await UserRepository().save_user(user, include=['subscriptions'])
 
     @staticmethod
     def update_subscription(user: UserModel, days: int = 1):
@@ -125,15 +119,14 @@ class Level:
     @staticmethod
     async def get_level(identifier: str):
         try:
-            logger.info('попал в get_level')
-            user = await UserRepository().get_user_by_identifier(identifier)
+            user = await UserRepository().get_user_by_identifier(identifier, include=['level'])
             if not user.level_rel:
                 await LevelsRepository().update_levels()
-                user = await UserRepository().get_user_by_identifier(identifier)
+                user = await UserRepository().get_user_by_identifier(identifier, include=['level'])
 
             level = user.level_rel
             if user.hearts == 0:
-                raise HTTPException(status_code=402, detail=f"сердца кончились")
+                raise HTTPException(status_code=402, detail=f"hearts are over")
             else:
                 user.hearts -= 1
                 level_dict = level.to_read_model().dict()
@@ -148,7 +141,11 @@ class Rating:
 
     @staticmethod
     async def add_game(identifier: str, reputation_game: int, used_clue: int):
-        user = await UserRepository().get_user_by_identifier(identifier)
-        next_level = await LevelsRepository().get_next_level(user.level_id)
-        User().update_user_ratings_and_level(user, reputation_game, used_clue, next_level.id)
-        await UserRepository.save_user(user)
+        user = await UserRepository().get_user_by_identifier(identifier, include=['rating', 'level'])
+        if reputation_game == 0:
+            id_level_to_add = user.level_id
+        else:
+            next_level = await LevelsRepository().get_next_level(user.level_id)
+            id_level_to_add = next_level.id
+        User().update_user_ratings_and_level(user, reputation_game, used_clue, id_level_to_add)
+        await UserRepository().save_user(user, include=['rating_forever', 'rating_week', 'rating_month', 'level'])

@@ -18,11 +18,10 @@ async def get_level(token: str | None = Header(default=None)):
         identifier = Encrypt.get_user_by_token(token)
         if identifier is None:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="невалидный токен")
-        level_dict = await Level.get_level(identifier)
+        level_dict = await Level().get_level(identifier)
         return JSONResponse(status_code=HTTPStatus.OK, content=level_dict)
     except HTTPException as e:
-        logger.error(f'HTTP error: {e.detail}, token: {token}')
-        raise
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
-        logger.error(f'Unexpected error while getting level: {e}, token: {token}')
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка взятия уровня пользователю: {e}")
+        logger.error(f'error get level = {e}, identifier = {identifier}')
+        raise HTTPException(status_code=500, detail=f"error get level: {e}")

@@ -12,6 +12,7 @@ from src.repositories.levels import LevelsRepository
 from src.repositories.users import UserRepository
 from src.schemas.rating import RatingSchema, RatingSchemaDTO
 from src.schemas.users import UserSchema
+from src.services.core import User
 from src.utils.repository import SQLAlchemyRepository
 
 
@@ -39,9 +40,9 @@ class RatingRepository(SQLAlchemyRepository):
                 session.commit()
 
     @staticmethod
-    async def find_rating(identifier: int, time: str) -> List[RatingModelForever]:
+    async def find_rating(identifier: str, time: str) -> List[RatingModelForever]:
         async with get_async_session() as session:
-            user = await session.scalar(select(UserModel).where(UserModel.identifier == identifier))
+            user = await UserRepository().get_user_by_identifier(identifier)
             if time == 'week':
                 query = (
                     select(RatingModelWeek)
@@ -70,6 +71,5 @@ class RatingRepository(SQLAlchemyRepository):
                     .order_by(desc(RatingModelForever.reputation))
                 )
                 res = await session.execute(query)
-                pass
             return res.scalars().all()
 

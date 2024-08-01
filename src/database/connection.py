@@ -5,9 +5,7 @@ from typing import AsyncGenerator, Annotated
 from loguru import logger
 from sqlalchemy import MetaData, String, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from sqlalchemy.pool import NullPool
 
 from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
 
@@ -41,9 +39,9 @@ class Base(DeclarativeBase):
 metadata = MetaData()
 
 sync_engine = create_engine(SYNC_DATABASE_URL, echo=True)
-SyncSession = sessionmaker(bind=sync_engine)
+SyncSession = sessionmaker(bind=sync_engine, autoflush=False, expire_on_commit=False)
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=True, )
 async_session_maker = async_sessionmaker(engine)
 
 

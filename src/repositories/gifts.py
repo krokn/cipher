@@ -17,6 +17,6 @@ class GiftRepository(SQLAlchemyRepository):
             result = await session.execute(select(GiftModel).where(GiftModel.name == gift_name))
             gift = result.scalar()
             if not gift:
-                raise HTTPException(status_code=404, detail="gift not found.")
+                raise HTTPException(status_code=404, detail="gift not found")
             return gift
 

@@ -1,6 +1,3 @@
-import base64
-import hashlib
-
 from loguru import logger
 
 from config import SECRET_FOR_TOKEN

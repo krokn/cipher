@@ -28,7 +28,7 @@ def response_rating(rating_orm, identifier: str):
     # Формируем окончательный ответ
     response = {
         'user': user_entry,  # Данные пользователя (может быть None)
-        'top_50_users': rating_dict_list  # Список первых 50 пользователей
+        'top_rating': rating_dict_list  # Список первых 50 пользователей
     }
 
     return response

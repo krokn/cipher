@@ -23,11 +23,11 @@ class UserModel(Base):
 
     platform: Mapped["PlatformModel"] = relationship('PlatformModel', uselist=False, lazy="joined")
     rating_forever: Mapped["RatingModelForever"] = relationship('RatingModelForever', back_populates='user',
-                                                                uselist=False, lazy="joined")
-    rating_week: Mapped["RatingModelWeek"] = relationship('RatingModelWeek', back_populates='user', uselist=False, lazy="joined")
-    rating_month: Mapped["RatingModelMonth"] = relationship('RatingModelMonth', back_populates='user', uselist=False, lazy="joined")
-    subscriptions: Mapped["SubscriptionModel"] = relationship('SubscriptionModel', back_populates='user', uselist=False, lazy="joined")
-    level_rel: Mapped["LevelModel"] = relationship('LevelModel', back_populates='user', uselist=False, lazy="joined")
+                                                                uselist=False)
+    rating_week: Mapped["RatingModelWeek"] = relationship('RatingModelWeek', back_populates='user', uselist=False)
+    rating_month: Mapped["RatingModelMonth"] = relationship('RatingModelMonth', back_populates='user', uselist=False)
+    subscriptions: Mapped["SubscriptionModel"] = relationship('SubscriptionModel', back_populates='user', uselist=False)
+    level_rel: Mapped["LevelModel"] = relationship('LevelModel', back_populates='user', uselist=False)
 
     def to_read_model(self) -> UserSchema:
         return UserSchema(
@@ -47,7 +47,7 @@ class RatingModelMonth(Base):
     reputation: Mapped[int] = mapped_column(default=0)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_month", uselist=False, lazy="joined")
+    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_month", uselist=False)
 
     def to_read_model(self) -> RatingSchema:
         return RatingSchema(
@@ -64,7 +64,7 @@ class RatingModelWeek(Base):
     reputation: Mapped[int] = mapped_column(default=0)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_week", uselist=False, lazy="joined")
+    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_week", uselist=False)
 
     def to_read_model(self) -> RatingSchema:
         return RatingSchema(
@@ -81,7 +81,7 @@ class RatingModelForever(Base):
     reputation: Mapped[int] = mapped_column(default=0)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_forever", uselist=False, lazy="joined")
+    user: Mapped["UserModel"] = relationship("UserModel", back_populates="rating_forever", uselist=False)
 
     def to_read_model(self) -> RatingSchema:
         return RatingSchema(
@@ -112,7 +112,7 @@ class GiftModel(Base):
     hearts: Mapped[int] = mapped_column(default=0)
     clue: Mapped[int] = mapped_column(default=0)
 
-    subscriptions: Mapped["SubscriptionModel"] = relationship('SubscriptionModel', back_populates='gift', uselist=False, lazy="joined")
+    subscriptions: Mapped["SubscriptionModel"] = relationship('SubscriptionModel', back_populates='gift', uselist=False)
 
     def to_read_model(self) -> GiftSchema:
         return GiftSchema(
@@ -130,8 +130,8 @@ class SubscriptionModel(Base):
     gift_id: Mapped[int] = mapped_column(ForeignKey("gifts.id"), primary_key=True)
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
 
-    user: Mapped["UserModel"] = relationship('UserModel', back_populates='subscriptions', uselist=False, lazy="joined")
-    gift: Mapped["GiftModel"] = relationship('GiftModel', back_populates='subscriptions', uselist=False, lazy="joined")
+    user: Mapped["UserModel"] = relationship('UserModel', back_populates='subscriptions', uselist=False)
+    gift: Mapped["GiftModel"] = relationship('GiftModel', back_populates='subscriptions', uselist=False)
 
     def to_read_model(self) -> SubscriptionSchema:
         return SubscriptionSchema(
@@ -162,7 +162,7 @@ class LevelModel(Base):
     attempts: Mapped[int] = mapped_column()
     degree_hint: Mapped[int] = mapped_column()
 
-    user: Mapped["UserModel"] = relationship('UserModel', back_populates='level_rel', uselist=False, lazy="joined")
+    user: Mapped["UserModel"] = relationship('UserModel', back_populates='level_rel', uselist=False)
 
     def to_read_model(self) -> LevelSchema:
         return LevelSchema(

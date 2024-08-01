@@ -6,7 +6,7 @@ app = FastAPI(
     title="Шифр",
 )
 
-app.add_middleware(PyInstrumentProfilerMiddleware)
+# app.add_middleware(PyInstrumentProfilerMiddleware)
 
 
 for router in all_routers:

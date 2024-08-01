@@ -1,6 +1,7 @@
 import base64
 import hashlib
 
+from fastapi import HTTPException
 from loguru import logger
 
 from config import SECRET_FOR_TOKEN
@@ -40,8 +41,8 @@ class Encrypt:
             logger.info(f'user_signatura = {user_signatura}')
             if user_signatura == server_signatura:
                 return decoded_identification_string
-        except:
-            return None
+        except Exception as e:
+            raise HTTPException(status_code=405, detail='token incorrect')
 
     @staticmethod
     def create_token(phone: str):

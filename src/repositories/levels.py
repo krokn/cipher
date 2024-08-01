@@ -27,12 +27,9 @@ class LevelsRepository(SQLAlchemyRepository):
                     await LevelsRepository().update_levels()
                     next_level_result = await session.execute(next_level_query)
                     next_level = next_level_result.scalar_one_or_none()
-
                     if not next_level:
-                        raise NoResultFound(f"Level with ID {next_level_id} not found even after updating levels")
+                        raise HTTPException(status_code=404, detail='New level not found')
                 return next_level
-            except NoResultFound as e:
-                raise HTTPException(status_code=404, detail=str(e))
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Error fetching next level: {str(e)}")
 

@@ -18,13 +18,15 @@ router = APIRouter(
 async def get_user(token: str | None = Header(default=None)):
     try:
         identifier = Encrypt.get_user_by_token(token)
-        user = await UserRepository().get_user_by_identifier(identifier)
+        user = await UserRepository().get_user_by_identifier(identifier, include=['subscriptions', 'gift'])
         if user.subscriptions.gift.name == 'премиум-подписка':
             await User().refresh_subscription_user(identifier)
             user = await UserRepository().get_user_by_identifier(identifier)
         user_dict = user.to_read_model().dict()
         return JSONResponse(status_code=HTTPStatus.OK, content=user_dict)
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"ошибка получения пользователя {e}")
+        raise HTTPException(status_code=500, detail=f"error get user = {e}, identifier = {identifier}")
 
 
