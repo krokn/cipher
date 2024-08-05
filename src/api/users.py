@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Header
-from loguru import logger
+from src.logging.logger import logger
 from starlette.responses import JSONResponse
 
 from src.repositories.users import UserRepository
@@ -30,3 +30,13 @@ async def get_user(token: str | None = Header(default=None)):
         raise HTTPException(status_code=500, detail=f"error get user = {e}, identifier = {identifier}")
 
 
+@router.post('')
+async def subtract_clue(token: str | None = Header(default=None), used_clue: int = 0):
+    try:
+        identifier = Encrypt.get_user_by_token(token)
+        await User().subtract_clue_user(identifier, used_clue)
+        return JSONResponse(status_code=HTTPStatus.OK, content='subtract clue')
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error subtract clue = {e}, identifier = {identifier}")

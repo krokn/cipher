@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from loguru import logger
+from src.logging.logger import logger
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.orm import aliased
 

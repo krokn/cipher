@@ -1,11 +1,9 @@
-import time
 from http import HTTPStatus
-
 from fastapi import APIRouter, HTTPException
-from loguru import logger
 from starlette.responses import JSONResponse
 
 from src.auth.utils import Auth
+from src.logging.logger import logger
 from src.repositories.users import UserRepository
 from src.schemas.auth import AuthSchemaWithPhone, AuthSchemaWithEmail
 from src.schemas.users import AuthEmailWithCode

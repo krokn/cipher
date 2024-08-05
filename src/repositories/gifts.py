@@ -1,8 +1,5 @@
 from fastapi import HTTPException
-from loguru import logger
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.database.connection import get_async_session
 from src.database.models import GiftModel
 from src.utils.repository import SQLAlchemyRepository

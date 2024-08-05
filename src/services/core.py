@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime as time
 import time as Time
 from fastapi import HTTPException
-from loguru import logger
+from src.logging.logger import logger
 from src.database.models import UserModel, PlatformModel, GiftModel, SubscriptionModel, RatingModelWeek, \
     RatingModelMonth, RatingModelForever
 from src.repositories.gifts import GiftRepository
@@ -22,7 +22,9 @@ class User:
         gift = await GiftRepository().get_gift_by_name('обычная-подписка')
         platform = await PlatformRepository().get_platform(platform)
         user = User().create_user(identifier, platform, gift)
-        await UserRepository().save_user(user, include=['rating_forever', 'rating_week', 'rating_month', 'subscriptions', 'gifts', 'level'])
+        await UserRepository().save_user(user,
+                                         include=['rating_forever', 'rating_week', 'rating_month', 'subscriptions',
+                                                  'gifts', 'level'])
 
     @staticmethod
     async def add_gift_user(identifier: str, name_gift: str):
@@ -58,6 +60,8 @@ class User:
             user.hearts += user.subscriptions.gift.hearts * days
             user.clue += user.subscriptions.gift.clue * days
             user.subscriptions.updated_at = current_time
+            logger.info(
+                f'update subscription user = {user.identifier}, gift = {user.subscriptions.gift.name}, hearts = {user.subscriptions.gift.hearts}, clue = {user.subscriptions.gift.clue}, current_time = {current_time}')
             return user
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating user with subscription: {str(e)}")
@@ -80,15 +84,30 @@ class User:
             return difference_in_time
 
     @staticmethod
-    def update_user_ratings_and_level(user: UserModel, reputation_game: int, used_clue: int, next_level_id: int):
+    def update_user_ratings_and_level(user: UserModel, reputation_game: int, next_level_id: int):
         try:
             user.rating_forever.reputation += reputation_game
             user.rating_week.reputation += reputation_game
             user.rating_month.reputation += reputation_game
             user.level_id = next_level_id
-            user.clue -= used_clue
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating user ratings and level: {str(e)}")
+
+    @staticmethod
+    async def subtract_clue_user(identifier: str, clue: int):
+        try:
+            user = await UserRepository().get_user_by_identifier(identifier)
+            User().subtract_clue(user, clue)
+            await UserRepository().save_user(user)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error subtract clue: {str(e)}")
+
+    @staticmethod
+    def subtract_clue(user: UserModel, clue: int):
+        try:
+            user.clue -= clue
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error subtract clue: {str(e)}")
 
     @staticmethod
     def create_user(identifier: str, platform: PlatformModel, gift: GiftModel):
@@ -140,12 +159,16 @@ class Level:
 class Rating:
 
     @staticmethod
-    async def add_game(identifier: str, reputation_game: int, used_clue: int):
-        user = await UserRepository().get_user_by_identifier(identifier, include=['rating', 'level'])
-        if reputation_game == 0:
-            id_level_to_add = user.level_id
-        else:
-            next_level = await LevelsRepository().get_next_level(user.level_id)
-            id_level_to_add = next_level.id
-        User().update_user_ratings_and_level(user, reputation_game, used_clue, id_level_to_add)
-        await UserRepository().save_user(user, include=['rating_forever', 'rating_week', 'rating_month', 'level'])
+    async def add_game(identifier: str, reputation_game: int):
+        try:
+            user = await UserRepository().get_user_by_identifier(identifier, include=['rating', 'level'])
+            if reputation_game == 0:
+                id_level_to_add = user.level_id
+            else:
+                next_level = await LevelsRepository().get_next_level(user.level_id)
+                id_level_to_add = next_level.id
+            User().update_user_ratings_and_level(user, reputation_game, id_level_to_add)
+            await UserRepository().save_user(user, include=['rating_forever', 'rating_week', 'rating_month', 'level'])
+        except Exception as e:
+            logger.error(f'Unexpected error: {e}')
+            raise HTTPException(status_code=500, detail=f"error: {e}")

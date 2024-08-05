@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Header, HTTPException
-from loguru import logger
+from src.logging.logger import logger
 from starlette.responses import JSONResponse
 
 from src.database.models import PlatformModel
@@ -10,6 +10,7 @@ from src.repositories.rating import RatingRepository
 from src.responses.rating import response_rating
 from src.services.core import Rating, User
 from src.services.encryption import Encrypt
+from src.services.redis import redis_client
 
 router = APIRouter(
     prefix="/api/rating",
@@ -18,11 +19,19 @@ router = APIRouter(
 
 
 @router.post('/add_game')
-async def add_game(token: str | None = Header(default=None), reputation_game: int = 0, used_clue: int = 0):
+async def add_game(token: str | None = Header(default=None), reputation_game: int = 0):
     try:
         identifier = Encrypt.get_user_by_token(token)
-        await Rating().add_game(identifier, reputation_game, used_clue)
-        return JSONResponse(status_code=HTTPStatus.OK, content="add reputation_game")
+        isGetLevel = redis_client.get(identifier + '_level')
+        if isGetLevel and reputation_game < 100:
+            await Rating().add_game(identifier, reputation_game)
+            redis_client.delete(identifier + '_level')
+            logger.info(f'user = {identifier} add reputation = {reputation_game}')
+            return JSONResponse(status_code=HTTPStatus.OK, content="add reputation game")
+        else:
+            logger.error(f'user = {identifier} is cheating')
+            redis_client.delete(identifier + '_level')
+            raise HTTPException(status_code=409, detail=f'user = {identifier} is cheating')
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:

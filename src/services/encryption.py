@@ -2,7 +2,7 @@ import base64
 import hashlib
 
 from fastapi import HTTPException
-from loguru import logger
+from src.logging.logger import logger
 
 from config import SECRET_FOR_TOKEN
 
@@ -22,8 +22,8 @@ class Encrypt:
         return decoded_string
 
     @staticmethod
-    def hashed(str):
-        str_bytes = str.encode('utf-8')
+    def hashed(string):
+        str_bytes = string.encode('utf-8')
         sha256 = hashlib.sha256()
         sha256.update(str_bytes)
         hashed_str = sha256.hexdigest()
@@ -37,8 +37,6 @@ class Encrypt:
             decoded_identification_string = Encrypt.decoded(encoded_identification_string)
             token_server = Encrypt.create_token(decoded_identification_string)
             server_signatura = token_server.split("||")[1]
-            logger.info(f'server_signatura = {server_signatura}')
-            logger.info(f'user_signatura = {user_signatura}')
             if user_signatura == server_signatura:
                 return decoded_identification_string
         except Exception as e:

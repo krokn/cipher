@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from src.database.connection import get_async_session
 from src.database.models import UserModel, GiftModel, SubscriptionModel
+from src.logging.logger import logger
 
 from src.utils.repository import SQLAlchemyRepository
 
@@ -49,11 +50,10 @@ class UserRepository(SQLAlchemyRepository):
     async def add_gift(user: UserModel, gift: GiftModel):
         async with get_async_session() as session:
             try:
-
                 user.hearts += gift.hearts
                 user.clue += gift.clue
+                logger.info(f'add user gift = {user.identifier}, gift = {gift.name}, hearts = {gift.hearts}, clue = {gift.clue}')
                 session.add(user)
-
                 await session.commit()
             except SQLAlchemyError as e:
                 await session.rollback()

@@ -7,8 +7,10 @@ class AuthSchemaWithPhone(BaseModel):
 
     @field_validator('identifier')
     def validate_phone(cls, value):
-        if not (value.startswith('+') and value[1:].isdigit()):
-            raise ValueError('Phone number must start with "+" and contain only digits.')
+        if not (value.isdigit()):
+            raise ValueError('Phone number must contain only digits.')
+        if len(value) < 10:
+            raise ValueError('Phone number must contain more 9 digit.')
         return value
 
 

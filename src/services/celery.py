@@ -5,7 +5,7 @@ from email.header import Header
 
 from celery import Celery
 from celery.schedules import crontab
-from loguru import logger
+from src.logging.logger import logger
 
 from config import SMTP_USER, SMTP_PORT, SMTP_PASSWORD
 from src.services.redis import create_code_for_email_and_save_code

@@ -1,4 +1,4 @@
-from loguru import logger
+from src.logging.logger import logger
 
 from config import SECRET_FOR_TOKEN
 from src.services.encryption import Encrypt

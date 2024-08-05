@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Header
-from loguru import logger
+from src.logging.logger import logger
 from starlette.responses import JSONResponse
 
 from src.services.core import User
